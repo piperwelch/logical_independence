@@ -1,0 +1,16 @@
+NUM_ROWS = 7
+NUM_COLUMNS = 5
+NUM_ATOMS = NUM_ROWS * NUM_COLUMNS
+
+XLO = 0
+XHI = 45
+
+YLO = 0
+YHI = 64.6
+
+ZLO = -5 
+ZHI = 5
+
+XY = 0 
+XZ = 0 
+YZ = 0 
