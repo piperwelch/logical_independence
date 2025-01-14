@@ -1,0 +1,142 @@
+units		    si
+boundary	    f f f
+
+atom_style	    sphere
+neighbor        0.1 bin
+neigh_modify	delay 0 every 1 check yes
+comm_modify     vel yes 
+
+read_data       ${data_file}
+#read_data       data_file
+
+region		    outerbox block -0.05 0.635 -0.05 0.5176545 -0.05 0.05
+
+
+pair_style      granular
+pair_coeff      * * hooke 6000 10 tangential linear_history 1715 0.5 0.3 damping mass_velocity
+fix		        box all wall/gran/region hooke/history 30000.0 NULL 10.0 NULL 0.5 1 region outerbox
+
+timestep	    0.001
+thermo		    500
+
+fix		        1 all nve/sphere
+fix             2 all gravity -9.8 vector 0 0 1
+
+#energy minimization 
+
+run             2000
+
+##################################
+######### vibration sims #########
+##################################
+
+
+
+variable A equal ${amplitude}
+variable p1 equal ${period1}
+variable p2 equal ${period2}
+
+variable omega equal 2.0*3.1415/${p1}
+variable omega2 equal 2.0*3.1415/${p2}
+
+
+group		input1 id ${source_node1}
+group		input2 id ${source_node2}
+group		output id ${output_node}
+group       ins_out id ${source_node1} ${source_node2} ${output_node}
+
+
+
+if "${case} == 0100" then & 
+    'variable x equal swiggle(0.0,$A,${p1})' &
+	'variable v equal v_omega*($A-cwiggle(0.0,$A,${p1}))' & 
+	'fix 6 input2 move variable v_x NULL NULL v_v NULL NULL' 
+if "${case} == 1000" then & 
+    'variable x equal swiggle(0.0,$A,${p1})' &
+	'variable v equal v_omega*($A-cwiggle(0.0,$A,${p1}))' & 
+	'fix 6 input1 move variable v_x NULL NULL v_v NULL NULL' 
+if "${case} == 1100" then & 
+    'variable x equal swiggle(0.0,$A,${p1})' &
+	'variable v equal v_omega*($A-cwiggle(0.0,$A,${p1}))' & 
+	'fix 6 input1 move variable v_x NULL NULL v_v NULL NULL' & 
+	'fix 7 input2 move variable v_x NULL NULL v_v NULL NULL' 
+if "${case} == 0001" then & 
+    'variable x equal swiggle(0.0,$A,${p2})' &
+	'variable v equal v_omega2*($A-cwiggle(0.0,$A,${p2}))' & 
+	'fix 6 input2 move variable v_x NULL NULL v_v NULL NULL' 
+if "${case} == 0101" then & 
+    'variable x equal swiggle(0.0,$A,${p1})+swiggle(0.0,$A,${p2})' & 
+	'variable v equal v_omega*($A-cwiggle(0.0,$A,${p1}))+v_omega2*($A-cwiggle(0.0,$A,${p2}))' & 
+	'fix 6 input2 move variable v_x NULL NULL v_v NULL NULL' 
+if "${case} == 1001" then & 
+    'variable x equal swiggle(0.0,$A,${p1})' &
+	'variable v equal v_omega*($A-cwiggle(0.0,$A,${p1}))' & 
+    'variable x2 equal swiggle(0.0,$A,${p2})' &
+	'variable v2 equal v_omega2*($A-cwiggle(0.0,$A,${p2}))' & 
+    'fix 6 input1 move variable v_x NULL NULL v_v NULL NULL' & 
+	'fix 7 input2 move variable v_x2 NULL NULL v_v2 NULL NULL' 
+if "${case} == 1101" then & 
+    'variable x equal swiggle(0.0,$A,${p1})' &
+	'variable v equal v_omega*($A-cwiggle(0.0,$A,${p1}))' & 
+    'variable x2 equal swiggle(0.0,$A,${p1})+swiggle(0.0,$A,${p2})' & 
+	'variable v2 equal v_omega*($A-cwiggle(0.0,$A,${p1}))+v_omega2*($A-cwiggle(0.0,$A,${p2}))' & 
+    'fix 6 input1 move variable v_x NULL NULL v_v NULL NULL' &
+    'fix 7 input2 move variable v_x2 NULL NULL v_v2 NULL NULL' 
+if "${case} == 0010" then & 
+    'variable x equal swiggle(0.0,$A,${p2})' &
+	'variable v equal v_omega2*($A-cwiggle(0.0,$A,${p2}))' & 
+	'fix 6 input1 move variable v_x NULL NULL v_v NULL NULL' 
+if "${case} == 0110" then & 
+    'variable x equal swiggle(0.0,$A,${p1})' &
+	'variable v equal v_omega*($A-cwiggle(0.0,$A,${p1}))' & 
+    'variable x2 equal swiggle(0.0,$A,${p2})' &
+	'variable v2 equal v_omega2*($A-cwiggle(0.0,$A,${p2}))' & 
+    'fix 6 input2 move variable v_x NULL NULL v_v NULL NULL' & 
+	'fix 7 input1 move variable v_x2 NULL NULL v_v2 NULL NULL' 
+if "${case} == 1010" then & 
+    'variable x equal swiggle(0.0,$A,${p1})+swiggle(0.0,$A,${p2})' & 
+	'variable v equal v_omega*($A-cwiggle(0.0,$A,${p1}))+v_omega2*($A-cwiggle(0.0,$A,${p2}))' & 
+    'fix 6 input1 move variable v_x NULL NULL v_v NULL NULL' 
+if "${case} == 1110" then & 
+    'variable x equal swiggle(0.0,$A,${p1})+swiggle(0.0,$A,${p2})' & 
+	'variable v equal v_omega*($A-cwiggle(0.0,$A,${p1}))+v_omega2*($A-cwiggle(0.0,$A,${p2}))' & 
+    'variable x2 equal swiggle(0.0,$A,${p1})' &
+	'variable v2 equal v_omega*($A-cwiggle(0.0,$A,${p1}))' & 
+	'fix 6 input2 move variable v_x2 NULL NULL v_v2 NULL NULL' & 
+    'fix 7 input1 move variable v_x NULL NULL v_v NULL NULL' 
+if "${case} == 0011" then & 
+    'variable x equal swiggle(0.0,$A,${p2})' &
+	'variable v equal v_omega2*($A-cwiggle(0.0,$A,${p2}))' & 
+	'fix 6 input1 move variable v_x NULL NULL v_v NULL NULL' & 
+	'fix 7 input2 move variable v_x NULL NULL v_v NULL NULL' 
+if "${case} == 0111" then & 
+    'variable x equal swiggle(0.0,$A,${p1})+swiggle(0.0,$A,${p2})' & 
+	'variable v equal v_omega*($A-cwiggle(0.0,$A,${p1}))+v_omega2*($A-cwiggle(0.0,$A,${p2}))' & 
+    'variable x2 equal swiggle(0.0,$A,${p2})' &
+	'variable v2 equal v_omega2*($A-cwiggle(0.0,$A,${p2}))' & 
+	'fix 6 input1 move variable v_x2 NULL NULL v_v2 NULL NULL' & 
+    'fix 7 input2 move variable v_x NULL NULL v_v NULL NULL' 
+if "${case} == 1011" then & 
+    'variable x equal swiggle(0.0,$A,${p1})+swiggle(0.0,$A,${p2})' & 
+	'variable v equal v_omega*($A-cwiggle(0.0,$A,${p1}))+v_omega2*($A-cwiggle(0.0,$A,${p2}))' & 
+    'variable x2 equal swiggle(0.0,$A,${p2})' &
+	'variable v2 equal v_omega2*($A-cwiggle(0.0,$A,${p2}))' & 
+	'fix 6 input2 move variable v_x2 NULL NULL v_v2 NULL NULL' & 
+    'fix 7 input1 move variable v_x NULL NULL v_v NULL NULL' 
+if "${case} == 1111" then & 
+    'variable x equal swiggle(0.0,$A,${p1})+swiggle(0.0,$A,${p2})' & 
+	'variable v equal v_omega*($A-cwiggle(0.0,$A,${p1}))+v_omega2*($A-cwiggle(0.0,$A,${p2}))' & 
+    'fix 6 input1 move variable v_x NULL NULL v_v NULL NULL' & 
+	'fix 7 input2 move variable v_x NULL NULL v_v NULL NULL' 
+
+
+#fix             3 input move wiggle 0.0 0.01 0.00 0.05
+
+
+if              "${visualize} == False" then &
+                    'dump 1 output custom 5 ../dumps/period${p1}_period${p2}/dump.${method}_eval_seed${seed}_id${id}_${case} id x y'
+
+if              "${visualize} == True" then & 
+                    'dump 1  all  custom 5 ${method}_eval_materials/dump.${method}_eval_seed${seed}_id${id}_${case}_XOR_AND id x y z radius fx fy fz mass'
+
+run		        2000
