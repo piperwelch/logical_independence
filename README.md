@@ -5,5 +5,7 @@ Welch, Piper, et al. “Scalable Evolution of Logically Independent Polycomputat
 <p align="center">
   <img src="https://github.com/piperwelch/logical_independence/blob/main/system_overview.png"  width="600">
 </p>
+
+Video materials from our implementation of a mechanical XOR are available in the chair_XOR/ folder. 
 </br>
 </br>
